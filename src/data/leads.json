@@ -1,0 +1,13 @@
+[
+  {
+    "id": "1782666460694",
+    "name": "Test Builder",
+    "email": "test@sahig.ca",
+    "phone": "604-555-0101",
+    "service": "Hardwood Flooring",
+    "contactMethod": "Call",
+    "message": "This is a test estimate request to verify DB storage.",
+    "status": "Contacted",
+    "createdAt": "2026-06-28T17:07:40.694Z"
+  }
+]

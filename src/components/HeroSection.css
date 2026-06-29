@@ -1,0 +1,103 @@
+.hero-section {
+  position: relative;
+  height: 100vh;
+  min-height: 700px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  z-index: -2;
+  opacity: 0;
+  transition: opacity 1.5s ease-in-out;
+}
+
+.hero-bg.active {
+  opacity: 1;
+}
+
+.hero-bg.sketch {
+  background-image: url('/images/kitchen_sketch.png');
+}
+
+.hero-bg.cad {
+  background-image: url('/images/kitchen_cad.png');
+}
+
+.hero-bg.real {
+  background-image: url('/images/kitchen_real.png');
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to right, rgba(26,26,26,0.8), rgba(26,26,26,0.4));
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+}
+
+.hero-text-box {
+  max-width: 650px;
+  padding: 48px;
+  border-radius: 16px;
+  background: rgba(26, 26, 26, 0.65); /* Darker glass for hero to ensure text contrast */
+}
+
+.hero-text-box h1 {
+  font-size: 3.5rem;
+  color: var(--color-text-light);
+  margin-bottom: 24px;
+}
+
+.hero-text-box p {
+  font-size: 1.25rem;
+  color: #e0e0e0;
+  margin-bottom: 40px;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 2px solid var(--color-accent);
+  color: var(--color-accent);
+}
+
+.btn-outline:hover {
+  background-color: var(--color-accent);
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .hero-text-box {
+    padding: 32px;
+  }
+  .hero-text-box h1 {
+    font-size: 2.5rem;
+  }
+  .hero-actions {
+    flex-direction: column;
+  }
+  .hero-bg {
+    background-attachment: scroll;
+  }
+}

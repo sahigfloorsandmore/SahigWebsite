@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1",
+    "title": "Welcome to Sahig Floors and More",
+    "excerpt": "We are proud to launch our new website showcasing our premium floor preparation, levelling, custom tiling, and hardwood installation services.",
+    "content": "At Sahig Floors and More, we believe that every great floor starts with a perfect foundation. Based in Abbotsford, British Columbia, we service the entire Lower Mainland and Fraser Valley. Whether you need wide-plank engineered hardwood for a new master bedroom, heavy-duty epoxy coatings for a commercial garage showroom, or self-levelling concrete preparation, our team brings years of expert craftsmanship to the table.\n\nBrowse our newly launched portfolio page to explore photos of our master bath tile layouts, open-concept renovations, and commercial subfloor leveling work. Stay tuned to our blog for tips on choosing materials and maintaining your hardwood floors!",
+    "image": "/images/services/tile.png",
+    "date": "2026-06-28T12:00:00.000Z",
+    "source": "Manual"
+  },
+  {
+    "id": "2",
+    "title": "Why Floor Levelling is Crucial for Luxury Vinyl Plank (LVP)",
+    "excerpt": "Learn why preparing your concrete subfloor is the single most important step in preventing soft spots and cracks in your new vinyl flooring.",
+    "content": "Luxury Vinyl Plank (LVP) is one of the most durable and visually stunning choices for modern homes, but its installation is only as good as the subfloor underneath. Many homeowners ask us why we place so much emphasis on subfloor prep and concrete self-levelling.\n\nIf a subfloor has dips, slopes, or high spots, LVP will flex when stepped on. Over time, this constant flexing stresses the click-lock joints, leading to gaps, squeaks, or completely broken planks. Our floor preparation specialists grind down concrete high points and pour high-flow self-levelling underlayment to achieve a perfect 3/16-inch flatness tolerance across 10 feet. Investing in proper leveling ensures your floor looks spectacular and lasts a lifetime.",
+    "image": "/images/services/floor_prep.png",
+    "date": "2026-06-27T10:00:00.000Z",
+    "source": "Manual"
+  }
+]
