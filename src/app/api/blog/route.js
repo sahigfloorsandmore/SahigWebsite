@@ -1,14 +1,15 @@
-import { promises as fs } from "fs";
-import path from "path";
-
-const blogPath = path.join(process.cwd(), "src", "data", "blog.json");
-const settingsPath = path.join(process.cwd(), "src", "data", "settings.json");
+import { supabase } from "@/lib/supabase";
 
 // Helper to dispatch cross-posting webhooks
 async function dispatchCrossPosting(post) {
   try {
-    const fileData = await fs.readFile(settingsPath, "utf8");
-    const settings = JSON.parse(fileData);
+    const { data: settings } = await supabase
+      .from("settings")
+      .select("*")
+      .eq("key", "config")
+      .single();
+
+    if (!settings) return;
 
     const payload = {
       title: post.title,
@@ -18,16 +19,16 @@ async function dispatchCrossPosting(post) {
       url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://sahig.ca"}/blog`
     };
 
-    if (settings.instagramWebhook) {
-      fetch(settings.instagramWebhook, {
+    if (settings.instagram_webhook) {
+      fetch(settings.instagram_webhook, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       }).catch((e) => console.error("Instagram dispatch failed:", e));
     }
 
-    if (settings.linkedinWebhook) {
-      fetch(settings.linkedinWebhook, {
+    if (settings.linkedin_webhook) {
+      fetch(settings.linkedin_webhook, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -41,13 +42,25 @@ async function dispatchCrossPosting(post) {
 // Public Fetch Blog Posts
 export async function GET(req) {
   try {
-    let fileData = "[]";
-    try {
-      fileData = await fs.readFile(blogPath, "utf8");
-    } catch (e) {
-      // File missing, fallback to empty array
-    }
-    return Response.json(JSON.parse(fileData));
+    const { data: posts, error } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .order("date", { ascending: false });
+
+    if (error) throw error;
+
+    const mappedPosts = posts.map(p => ({
+      id: p.id,
+      title: p.title,
+      excerpt: p.excerpt,
+      content: p.content,
+      image: p.image,
+      date: p.date,
+      source: p.source,
+      sourceUrl: p.source_url
+    }));
+
+    return Response.json(mappedPosts);
   } catch (error) {
     console.error("Blog GET Error:", error);
     return Response.json({ message: "Failed to read blog database" }, { status: 500 });
@@ -81,16 +94,19 @@ export async function POST(req) {
       source: "Manual"
     };
 
-    let posts = [];
-    try {
-      const fileData = await fs.readFile(blogPath, "utf8");
-      posts = JSON.parse(fileData);
-    } catch (e) {
-      // Empty posts list
-    }
+    const { error } = await supabase
+      .from("blog_posts")
+      .insert({
+        id: newPost.id,
+        title: newPost.title,
+        excerpt: newPost.excerpt,
+        content: newPost.content,
+        image: newPost.image,
+        date: newPost.date,
+        source: newPost.source
+      });
 
-    posts.unshift(newPost);
-    await fs.writeFile(blogPath, JSON.stringify(posts, null, 2), "utf8");
+    if (error) throw error;
 
     // Asynchronously trigger cross-posting social integrations
     dispatchCrossPosting(newPost);
@@ -119,31 +135,34 @@ export async function PUT(req) {
       return Response.json({ message: "Post ID, title and content are required" }, { status: 400 });
     }
 
-    let posts = [];
-    try {
-      const fileData = await fs.readFile(blogPath, "utf8");
-      posts = JSON.parse(fileData);
-    } catch (e) {
-      return Response.json({ message: "Blog database is empty" }, { status: 404 });
-    }
+    const updatedExcerpt = excerpt || (content.length > 130 ? `${content.substring(0, 130)}...` : content);
 
-    const postIndex = posts.findIndex((p) => p.id === id);
-    if (postIndex === -1) {
-      return Response.json({ message: "Blog post not found" }, { status: 404 });
-    }
+    const { data: updatedPost, error } = await supabase
+      .from("blog_posts")
+      .update({
+        title,
+        excerpt: updatedExcerpt,
+        content,
+        image
+      })
+      .eq("id", id)
+      .select()
+      .single();
 
-    // Keep dynamic properties (date, source, sourceUrl) while updating values
-    posts[postIndex] = {
-      ...posts[postIndex],
-      title,
-      excerpt: excerpt || (content.length > 130 ? `${content.substring(0, 130)}...` : content),
-      content,
-      image: image || posts[postIndex].image
+    if (error) throw error;
+
+    const mappedPost = {
+      id: updatedPost.id,
+      title: updatedPost.title,
+      excerpt: updatedPost.excerpt,
+      content: updatedPost.content,
+      image: updatedPost.image,
+      date: updatedPost.date,
+      source: updatedPost.source,
+      sourceUrl: updatedPost.source_url
     };
 
-    await fs.writeFile(blogPath, JSON.stringify(posts, null, 2), "utf8");
-
-    return Response.json({ success: true, post: posts[postIndex] });
+    return Response.json({ success: true, post: mappedPost });
   } catch (error) {
     console.error("Blog PUT Error:", error);
     return Response.json({ message: "Failed to update blog post" }, { status: 500 });
@@ -167,21 +186,12 @@ export async function DELETE(req) {
       return Response.json({ message: "Post ID is required" }, { status: 400 });
     }
 
-    let posts = [];
-    try {
-      const fileData = await fs.readFile(blogPath, "utf8");
-      posts = JSON.parse(fileData);
-    } catch (e) {
-      return Response.json({ message: "Blog database is empty" }, { status: 404 });
-    }
+    const { error } = await supabase
+      .from("blog_posts")
+      .delete()
+      .eq("id", id);
 
-    const filteredPosts = posts.filter((p) => p.id !== id);
-    
-    if (posts.length === filteredPosts.length) {
-      return Response.json({ message: "Blog post not found" }, { status: 404 });
-    }
-
-    await fs.writeFile(blogPath, JSON.stringify(filteredPosts, null, 2), "utf8");
+    if (error) throw error;
 
     return Response.json({ success: true });
   } catch (error) {
@@ -189,3 +199,4 @@ export async function DELETE(req) {
     return Response.json({ message: "Failed to delete blog post" }, { status: 500 });
   }
 }
+

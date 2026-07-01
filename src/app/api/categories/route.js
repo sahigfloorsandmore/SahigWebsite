@@ -1,18 +1,15 @@
-import { promises as fs } from "fs";
-import path from "path";
-
-const categoriesPath = path.join(process.cwd(), "src", "data", "categories.json");
+import { supabase } from "@/lib/supabase";
 
 // Public Fetch Categories
 export async function GET(req) {
   try {
-    let fileData = '["Flooring", "Renovations", "Floor Prep", "Specialty"]';
-    try {
-      fileData = await fs.readFile(categoriesPath, "utf8");
-    } catch (e) {
-      // Return defaults if database is missing
-    }
-    return Response.json(JSON.parse(fileData));
+    const { data: categories, error } = await supabase
+      .from("categories")
+      .select("name");
+
+    if (error) throw error;
+
+    return Response.json(categories.map(c => c.name));
   } catch (error) {
     console.error("Categories GET Error:", error);
     return Response.json({ message: "Failed to read categories database" }, { status: 500 });
@@ -36,7 +33,31 @@ export async function PUT(req) {
       return Response.json({ message: "Missing categories array payload" }, { status: 400 });
     }
 
-    await fs.writeFile(categoriesPath, JSON.stringify(categories, null, 2), "utf8");
+    const { data: existingData, error: fetchError } = await supabase
+      .from("categories")
+      .select("name");
+
+    if (fetchError) throw fetchError;
+
+    const existingNames = existingData.map(c => c.name);
+
+    const toInsert = categories.filter(c => !existingNames.includes(c));
+    const toDelete = existingNames.filter(c => !categories.includes(c));
+
+    if (toDelete.length > 0) {
+      const { error: delErr } = await supabase
+        .from("categories")
+        .delete()
+        .in("name", toDelete);
+      if (delErr) throw delErr;
+    }
+
+    if (toInsert.length > 0) {
+      const { error: insErr } = await supabase
+        .from("categories")
+        .insert(toInsert.map(name => ({ name })));
+      if (insErr) throw insErr;
+    }
 
     return Response.json({ success: true, categories });
   } catch (error) {

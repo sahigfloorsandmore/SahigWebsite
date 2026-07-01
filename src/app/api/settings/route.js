@@ -1,7 +1,4 @@
-import { promises as fs } from "fs";
-import path from "path";
-
-const settingsPath = path.join(process.cwd(), "src", "data", "settings.json");
+import { supabase } from "@/lib/supabase";
 
 // Fetch Settings
 export async function GET(req) {
@@ -13,24 +10,47 @@ export async function GET(req) {
       return Response.json({ message: "Unauthorized access" }, { status: 401 });
     }
 
-    let settings = { recipientEmails: "admin@sahig.ca" };
-    try {
-      const fileData = await fs.readFile(settingsPath, "utf8");
-      settings = JSON.parse(fileData);
-    } catch (e) {
-      // Ignore
+    let { data: settings, error } = await supabase
+      .from("settings")
+      .select("*")
+      .eq("key", "config")
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!settings) {
+      const generatedSecret = `sb_${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}`;
+      const { data: insertedSettings, error: insertError } = await supabase
+        .from("settings")
+        .insert({
+          key: "config",
+          recipient_emails: "admin@sahig.ca",
+          webhook_secret: generatedSecret
+        })
+        .select()
+        .single();
+      if (insertError) throw insertError;
+      settings = insertedSettings;
+    } else if (!settings.webhook_secret) {
+      const generatedSecret = `sb_${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}`;
+      const { data: updatedSettings, error: updateError } = await supabase
+        .from("settings")
+        .update({ webhook_secret: generatedSecret })
+        .eq("key", "config")
+        .select()
+        .single();
+      if (updateError) throw updateError;
+      settings = updatedSettings;
     }
- 
-    if (!settings.webhookSecret) {
-      settings.webhookSecret = `sb_${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}`;
-      try {
-        await fs.writeFile(settingsPath, JSON.stringify(settings, null, 2), "utf8");
-      } catch (e) {
-        console.error("Failed to write generated secret:", e);
-      }
-    }
- 
-    return Response.json(settings);
+
+    const mapped = {
+      recipientEmails: settings.recipient_emails || "",
+      webhookSecret: settings.webhook_secret || "",
+      instagramWebhook: settings.instagram_webhook || "",
+      linkedinWebhook: settings.linkedin_webhook || ""
+    };
+
+    return Response.json(mapped);
   } catch (error) {
     console.error("Settings GET Error:", error);
     return Response.json({ message: "Failed to read settings records" }, { status: 500 });
@@ -48,23 +68,32 @@ export async function PUT(req) {
     }
 
     const body = await req.json();
- 
-    let existingSettings = {};
-    try {
-      const fileData = await fs.readFile(settingsPath, "utf8");
-      existingSettings = JSON.parse(fileData);
-    } catch (e) {
-      // Ignore if missing
-    }
 
-    const newSettings = {
-      ...existingSettings,
-      ...body
+    const updateData = {};
+    if (body.recipientEmails !== undefined) updateData.recipient_emails = body.recipientEmails;
+    if (body.instagramWebhook !== undefined) updateData.instagram_webhook = body.instagramWebhook;
+    if (body.linkedinWebhook !== undefined) updateData.linkedin_webhook = body.linkedinWebhook;
+    if (body.webhookSecret !== undefined) updateData.webhook_secret = body.webhookSecret;
+
+    const { data: newSettings, error: updateError } = await supabase
+      .from("settings")
+      .upsert({
+        key: "config",
+        ...updateData
+      })
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+
+    const mapped = {
+      recipientEmails: newSettings.recipient_emails || "",
+      webhookSecret: newSettings.webhook_secret || "",
+      instagramWebhook: newSettings.instagram_webhook || "",
+      linkedinWebhook: newSettings.linkedin_webhook || ""
     };
 
-    await fs.writeFile(settingsPath, JSON.stringify(newSettings, null, 2), "utf8");
- 
-    return Response.json({ success: true, settings: newSettings });
+    return Response.json({ success: true, settings: mapped });
   } catch (error) {
     console.error("Settings PUT Error:", error);
     return Response.json({ message: "Failed to update settings" }, { status: 500 });

@@ -1,7 +1,4 @@
-import { promises as fs } from "fs";
-import path from "path";
-
-const dbPath = path.join(process.cwd(), "src", "data", "leads.json");
+import { supabase } from "@/lib/supabase";
 
 // Submit Lead
 export async function POST(req) {
@@ -13,41 +10,35 @@ export async function POST(req) {
       return Response.json({ message: "Missing required fields" }, { status: 400 });
     }
 
-    // Read database
-    let leads = [];
-    try {
-      const fileData = await fs.readFile(dbPath, "utf8");
-      leads = JSON.parse(fileData);
-    } catch (e) {
-      // In case database file is missing, initialize it
-    }
+    const { data: newLead, error: insertError } = await supabase
+      .from("leads")
+      .insert({
+        name,
+        email,
+        phone,
+        service,
+        contact_method: contactMethod,
+        message,
+        status: "New"
+      })
+      .select()
+      .single();
 
-    const newLead = {
-      id: Date.now().toString(),
-      name,
-      email,
-      phone,
-      service,
-      contactMethod,
-      message,
-      status: "New",
-      createdAt: new Date().toISOString()
-    };
-
-    leads.push(newLead);
-    await fs.writeFile(dbPath, JSON.stringify(leads, null, 2), "utf8");
+    if (insertError) throw insertError;
 
     // Email Dispatch via Resend HTTP API
     let recipientEmails = process.env.LEAD_RECIPIENT_EMAILS || "admin@sahig.ca";
     try {
-      const settingsPath = path.join(process.cwd(), "src", "data", "settings.json");
-      const settingsData = await fs.readFile(settingsPath, "utf8");
-      const settings = JSON.parse(settingsData);
-      if (settings.recipientEmails) {
-        recipientEmails = settings.recipientEmails;
+      const { data: settings } = await supabase
+        .from("settings")
+        .select("*")
+        .eq("key", "config")
+        .single();
+      if (settings && settings.recipient_emails) {
+        recipientEmails = settings.recipient_emails;
       }
     } catch (e) {
-      // Settings file not created yet, fallback to env variable
+      // Settings query failed, fallback to env variable
     }
 
     const resendApiKey = process.env.RESEND_API_KEY;
@@ -143,14 +134,26 @@ export async function GET(req) {
       return Response.json({ message: "Unauthorized access" }, { status: 401 });
     }
 
-    let fileData = "[]";
-    try {
-      fileData = await fs.readFile(dbPath, "utf8");
-    } catch (e) {
-      // Database not populated yet
-    }
+    const { data: leads, error } = await supabase
+      .from("leads")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-    return Response.json(JSON.parse(fileData));
+    if (error) throw error;
+
+    const mapped = leads.map(l => ({
+      id: l.id,
+      name: l.name,
+      email: l.email,
+      phone: l.phone,
+      service: l.service,
+      contactMethod: l.contact_method,
+      message: l.message,
+      status: l.status,
+      createdAt: l.created_at
+    }));
+
+    return Response.json(mapped);
   } catch (error) {
     console.error("API GET Error:", error);
     return Response.json({ message: "Failed to read database records" }, { status: 500 });
@@ -174,23 +177,28 @@ export async function PUT(req) {
       return Response.json({ message: "Missing lead ID or status" }, { status: 400 });
     }
 
-    let leads = [];
-    try {
-      const fileData = await fs.readFile(dbPath, "utf8");
-      leads = JSON.parse(fileData);
-    } catch (e) {
-      return Response.json({ message: "No database records found" }, { status: 404 });
-    }
+    const { data: updatedLead, error } = await supabase
+      .from("leads")
+      .update({ status })
+      .eq("id", id)
+      .select()
+      .single();
 
-    const leadIdx = leads.findIndex(l => l.id === id);
-    if (leadIdx === -1) {
-      return Response.json({ message: "Lead not found" }, { status: 404 });
-    }
+    if (error) throw error;
 
-    leads[leadIdx].status = status;
-    await fs.writeFile(dbPath, JSON.stringify(leads, null, 2), "utf8");
+    const mapped = {
+      id: updatedLead.id,
+      name: updatedLead.name,
+      email: updatedLead.email,
+      phone: updatedLead.phone,
+      service: updatedLead.service,
+      contactMethod: updatedLead.contact_method,
+      message: updatedLead.message,
+      status: updatedLead.status,
+      createdAt: updatedLead.created_at
+    };
 
-    return Response.json({ success: true, lead: leads[leadIdx] });
+    return Response.json({ success: true, lead: mapped });
   } catch (error) {
     console.error("API PUT Error:", error);
     return Response.json({ message: "Failed to update lead records" }, { status: 500 });

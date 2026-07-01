@@ -1,21 +1,25 @@
-import { promises as fs } from "fs";
-import path from "path";
-
-const blogPath = path.join(process.cwd(), "src", "data", "blog.json");
-const settingsPath = path.join(process.cwd(), "src", "data", "settings.json");
+import { supabase } from "@/lib/supabase";
 
 // Helper to load webhook secret token from settings
 async function getWebhookSecret() {
   try {
-    const fileData = await fs.readFile(settingsPath, "utf8");
-    const settings = JSON.parse(fileData);
-    if (settings.webhookSecret) {
-      return settings.webhookSecret;
+    const { data: settings } = await supabase
+      .from("settings")
+      .select("webhook_secret")
+      .eq("key", "config")
+      .maybeSingle();
+
+    if (settings && settings.webhook_secret) {
+      return settings.webhook_secret;
     }
-    // Generate one if missing
+
     const generatedSecret = `sb_${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}`;
-    settings.webhookSecret = generatedSecret;
-    await fs.writeFile(settingsPath, JSON.stringify(settings, null, 2), "utf8");
+    await supabase
+      .from("settings")
+      .upsert({
+        key: "config",
+        webhook_secret: generatedSecret
+      });
     return generatedSecret;
   } catch (error) {
     return "sahig-blog-secret-fallback";
@@ -25,8 +29,13 @@ async function getWebhookSecret() {
 // Helper to dispatch cross-posting webhooks
 async function dispatchCrossPosting(post) {
   try {
-    const fileData = await fs.readFile(settingsPath, "utf8");
-    const settings = JSON.parse(fileData);
+    const { data: settings } = await supabase
+      .from("settings")
+      .select("*")
+      .eq("key", "config")
+      .single();
+
+    if (!settings) return;
 
     const payload = {
       title: post.title,
@@ -36,16 +45,16 @@ async function dispatchCrossPosting(post) {
       url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://sahig.ca"}/blog`
     };
 
-    if (settings.instagramWebhook) {
-      fetch(settings.instagramWebhook, {
+    if (settings.instagram_webhook) {
+      fetch(settings.instagram_webhook, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       }).catch((e) => console.error("Instagram dispatch failed:", e));
     }
 
-    if (settings.linkedinWebhook) {
-      fetch(settings.linkedinWebhook, {
+    if (settings.linkedin_webhook) {
+      fetch(settings.linkedin_webhook, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -77,13 +86,11 @@ export async function POST(req) {
       return Response.json({ message: "Content body is required" }, { status: 400 });
     }
 
-    // Clean content (remove extra spacing, trailing hashtags)
     const cleanedContent = content.trim();
 
     // 3. Generate Title (if not passed)
     let generatedTitle = passedTitle || "";
     if (!generatedTitle) {
-      // Grab first sentence or first 8 words
       const sentences = cleanedContent.split(/[.!?]/);
       const firstLine = sentences[0] ? sentences[0].trim() : "";
       
@@ -94,7 +101,6 @@ export async function POST(req) {
         generatedTitle = words.length > 5 ? `${words}...` : `Social Update - ${new Date().toLocaleDateString()}`;
       }
       
-      // Clean up common symbols or trailing commas
       generatedTitle = generatedTitle.replace(/[#*`_\[\]()]/g, "").trim();
     }
 
@@ -115,20 +121,24 @@ export async function POST(req) {
       image: postImage,
       date: new Date().toISOString(),
       source: "Facebook",
-      sourceUrl: sourceUrl || ""
+      source_url: sourceUrl || ""
     };
 
     // 7. Save to Database
-    let posts = [];
-    try {
-      const fileData = await fs.readFile(blogPath, "utf8");
-      posts = JSON.parse(fileData);
-    } catch (e) {
-      // File missing, fallback to empty array
-    }
+    const { error: insertError } = await supabase
+      .from("blog_posts")
+      .insert({
+        id: newPost.id,
+        title: newPost.title,
+        excerpt: newPost.excerpt,
+        content: newPost.content,
+        image: newPost.image,
+        date: newPost.date,
+        source: newPost.source,
+        source_url: newPost.source_url
+      });
 
-    posts.unshift(newPost); // Add to the top
-    await fs.writeFile(blogPath, JSON.stringify(posts, null, 2), "utf8");
+    if (insertError) throw insertError;
 
     // Asynchronously trigger cross-posting social integrations
     dispatchCrossPosting(newPost);

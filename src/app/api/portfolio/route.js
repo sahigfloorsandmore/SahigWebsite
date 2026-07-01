@@ -1,19 +1,29 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { supabase } from "@/lib/supabase";
 
-const dbPath = path.join(process.cwd(), "src", "data", "portfolio.json");
 const uploadDir = path.join(process.cwd(), "public", "images", "portfolio");
 
 // Fetch Projects
 export async function GET(req) {
   try {
-    let fileData = "[]";
-    try {
-      fileData = await fs.readFile(dbPath, "utf8");
-    } catch (e) {
-      // Empty database fallback
-    }
-    return Response.json(JSON.parse(fileData));
+    const { data: projects, error } = await supabase
+      .from("portfolio_projects")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    const mapped = projects.map((p) => ({
+      id: p.id,
+      title: p.title,
+      category: p.category,
+      description: p.description,
+      image: p.image,
+      createdAt: p.created_at
+    }));
+
+    return Response.json(mapped);
   } catch (error) {
     console.error("Portfolio GET Error:", error);
     return Response.json({ message: "Failed to read project database" }, { status: 500 });
@@ -45,10 +55,14 @@ export async function POST(req) {
 
     // Handle file upload
     if (imageFile && typeof imageFile !== "string" && imageFile.size > 0) {
+      try {
+        await fs.mkdir(uploadDir, { recursive: true });
+      } catch (err) {
+        // Ignore
+      }
       const byteData = await imageFile.arrayBuffer();
       const buffer = Buffer.from(byteData);
       
-      // Sanitize file name to prevent directory traversal or file-system conflicts
       const fileName = `${Date.now()}-${imageFile.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
       const filePath = path.join(uploadDir, fileName);
       
@@ -60,28 +74,29 @@ export async function POST(req) {
       return Response.json({ message: "Project image is required" }, { status: 400 });
     }
 
-    // Read existing database
-    let projects = [];
-    try {
-      const fileData = await fs.readFile(dbPath, "utf8");
-      projects = JSON.parse(fileData);
-    } catch (e) {
-      // Empty list fallback
-    }
+    const { data: newProject, error } = await supabase
+      .from("portfolio_projects")
+      .insert({
+        title,
+        category,
+        description,
+        image: finalImagePath
+      })
+      .select()
+      .single();
 
-    const newProject = {
-      id: Date.now().toString(),
-      title,
-      category,
-      description,
-      image: finalImagePath,
-      createdAt: new Date().toISOString()
+    if (error) throw error;
+
+    const mapped = {
+      id: newProject.id,
+      title: newProject.title,
+      category: newProject.category,
+      description: newProject.description,
+      image: newProject.image,
+      createdAt: newProject.created_at
     };
 
-    projects.push(newProject);
-    await fs.writeFile(dbPath, JSON.stringify(projects, null, 2), "utf8");
-
-    return Response.json({ success: true, project: newProject });
+    return Response.json({ success: true, project: mapped });
   } catch (error) {
     console.error("Portfolio POST Error:", error);
     return Response.json({ message: "Internal server error" }, { status: 500 });
@@ -105,21 +120,17 @@ export async function DELETE(req) {
       return Response.json({ message: "Missing project ID" }, { status: 400 });
     }
 
-    let projects = [];
-    try {
-      const fileData = await fs.readFile(dbPath, "utf8");
-      projects = JSON.parse(fileData);
-    } catch (e) {
-      return Response.json({ message: "No database records found" }, { status: 404 });
-    }
+    const { data: project, error: fetchError } = await supabase
+      .from("portfolio_projects")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-    const project = projects.find(p => p.id === id);
-    if (!project) {
+    if (fetchError || !project) {
       return Response.json({ message: "Project not found" }, { status: 404 });
     }
 
-    // Clean up local disk file if it was uploaded to our portfolio folder
-    if (project.image.startsWith("/images/portfolio/")) {
+    if (project.image && project.image.startsWith("/images/portfolio/")) {
       try {
         const fileName = project.image.replace("/images/portfolio/", "");
         const filePath = path.join(uploadDir, fileName);
@@ -129,8 +140,12 @@ export async function DELETE(req) {
       }
     }
 
-    const updatedProjects = projects.filter(p => p.id !== id);
-    await fs.writeFile(dbPath, JSON.stringify(updatedProjects, null, 2), "utf8");
+    const { error: deleteError } = await supabase
+      .from("portfolio_projects")
+      .delete()
+      .eq("id", id);
+
+    if (deleteError) throw deleteError;
 
     return Response.json({ success: true });
   } catch (error) {
