@@ -18,7 +18,7 @@ export default function Footer() {
             <span className="footer-nav-divider">|</span>
             <a href="/blog" className="footer-nav-link">Blog</a>
             <span className="footer-nav-divider">|</span>
-            <a href="/#about" className="footer-nav-link">About</a>
+            <a href="/about" className="footer-nav-link">About</a>
             <span className="footer-nav-divider">|</span>
             <a href="/#contact" className="footer-nav-link">Contact</a>
           </div>

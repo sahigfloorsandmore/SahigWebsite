@@ -27,7 +27,7 @@ export default function Navbar() {
           <Link href="/#services">Services</Link>
           <Link href="/portfolio">Portfolio</Link>
           <Link href="/blog">Blog</Link>
-          <Link href="/#about">About</Link>
+          <Link href="/about">About</Link>
           <Link href="/#contact" className="btn nav-cta">
             <Phone size={18} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
             Get a Quote
@@ -57,7 +57,7 @@ export default function Navbar() {
             <Link href="/#services" onClick={() => setMenuOpen(false)}>Services</Link>
             <Link href="/portfolio" onClick={() => setMenuOpen(false)}>Portfolio</Link>
             <Link href="/blog" onClick={() => setMenuOpen(false)}>Blog</Link>
-            <Link href="/#about" onClick={() => setMenuOpen(false)}>About</Link>
+            <Link href="/about" onClick={() => setMenuOpen(false)}>About</Link>
             <Link href="/#contact" className="btn mobile-cta" onClick={() => setMenuOpen(false)}>
               Get a Quote
             </Link>

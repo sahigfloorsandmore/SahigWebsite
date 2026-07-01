@@ -1,0 +1,324 @@
+.about-page-wrapper {
+  background-color: var(--color-secondary);
+  color: var(--color-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hero Section */
+.about-hero {
+  position: relative;
+  padding: 180px 0 100px;
+  background: radial-gradient(circle at top left, rgba(196, 139, 94, 0.05) 0%, rgba(26, 26, 26, 0.02) 80%), #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.about-hero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin-bottom: 24px;
+  letter-spacing: -1px;
+}
+
+.about-hero h1 span {
+  color: var(--color-accent);
+}
+
+.about-hero-text {
+  max-width: 700px;
+  margin: 0 auto 35px;
+  font-size: 1.15rem;
+  color: #555555;
+  line-height: 1.7;
+}
+
+.about-hero .btn-call {
+  font-family: var(--font-heading);
+  letter-spacing: 0.5px;
+  box-shadow: 0 8px 24px rgba(196, 139, 94, 0.2);
+}
+
+/* Core Values / Intro Section */
+.about-intro-section {
+  padding: 80px 0;
+}
+
+.about-grid-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.about-intro-img-wrapper {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.about-intro-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.about-intro-img-wrapper:hover .about-intro-img {
+  transform: scale(1.03);
+}
+
+.about-intro-content h2 {
+  font-size: 2.2rem;
+  color: var(--color-primary);
+  margin-bottom: 20px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.about-intro-content p {
+  font-size: 1.05rem;
+  color: #444444;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+/* Mission Section */
+.about-mission-section {
+  padding: 80px 0;
+  background-color: #ffffff;
+  border-top: 1px solid rgba(0,0,0,0.03);
+  border-bottom: 1px solid rgba(0,0,0,0.03);
+}
+
+.about-mission-card {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 50px;
+  border-radius: 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(196, 139, 94, 0.15);
+  box-shadow: 0 15px 35px rgba(196, 139, 94, 0.04);
+}
+
+.about-mission-card h3 {
+  font-size: 1.5rem;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+}
+
+.about-mission-card p {
+  font-size: 1.25rem;
+  color: var(--color-primary);
+  line-height: 1.75;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* The Sahig Difference (Cards Grid) */
+.about-diff-section {
+  padding: 80px 0;
+}
+
+.about-diff-section h2 {
+  text-align: center;
+  font-size: 2.4rem;
+  color: var(--color-primary);
+  margin-bottom: 50px;
+}
+
+.about-diff-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.about-diff-card {
+  padding: 40px 30px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.about-diff-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(196, 139, 94, 0.2);
+}
+
+.about-diff-card-icon-wrapper {
+  background: rgba(196, 139, 94, 0.08);
+  color: var(--color-accent);
+  padding: 16px;
+  border-radius: 12px;
+  width: fit-content;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-diff-card h3 {
+  font-size: 1.35rem;
+  color: var(--color-primary);
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.about-diff-card p {
+  font-size: 0.95rem;
+  color: #555555;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Service Areas Text Section */
+.about-service-area-section {
+  padding: 60px 0 80px;
+  background: rgba(196, 139, 94, 0.02);
+  border-top: 1px solid rgba(196, 139, 94, 0.05);
+  border-bottom: 1px solid rgba(196, 139, 94, 0.05);
+  text-align: center;
+}
+
+.about-service-area-section h3 {
+  font-size: 1.8rem;
+  color: var(--color-primary);
+  margin-bottom: 16px;
+}
+
+.about-service-area-section p {
+  max-width: 800px;
+  margin: 0 auto;
+  font-size: 1.08rem;
+  color: #555555;
+  line-height: 1.7;
+}
+
+/* Let's Build Section & Map */
+.about-contact-section {
+  padding: 80px 0 100px;
+  background-color: #ffffff;
+}
+
+.about-contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 50px;
+  align-items: center;
+}
+
+.about-contact-details h2 {
+  font-size: 2.4rem;
+  color: var(--color-primary);
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
+
+.about-contact-details p {
+  font-size: 1.05rem;
+  color: #555555;
+  line-height: 1.6;
+  margin-bottom: 40px;
+}
+
+.about-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.about-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.about-contact-icon {
+  background: rgba(196, 139, 94, 0.08);
+  color: var(--color-accent);
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-contact-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.about-contact-info span.label {
+  font-size: 0.72rem;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  color: #888888;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.about-contact-info span.value {
+  font-size: 1.02rem;
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.about-contact-info a.value {
+  font-size: 1.02rem;
+  color: var(--color-accent);
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.about-contact-info a.value:hover {
+  color: var(--color-accent-hover);
+}
+
+.about-map-wrapper {
+  width: 100%;
+  height: 450px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.about-map-wrapper iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .about-grid-two-col,
+  .about-contact-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .about-diff-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .about-hero h1 {
+    font-size: 2.4rem;
+  }
+  .about-mission-card {
+    padding: 30px;
+  }
+  .about-mission-card p {
+    font-size: 1.1rem;
+  }
+  .about-map-wrapper {
+    height: 350px;
+  }
+}
