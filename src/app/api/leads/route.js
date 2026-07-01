@@ -1,5 +1,8 @@
 import { supabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
+
 // Submit Lead
 export async function POST(req) {
   try {

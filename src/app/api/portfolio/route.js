@@ -2,6 +2,9 @@ import { promises as fs } from "fs";
 import path from "path";
 import { supabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
+
 const uploadDir = path.join(process.cwd(), "public", "images", "portfolio");
 
 // Fetch Projects

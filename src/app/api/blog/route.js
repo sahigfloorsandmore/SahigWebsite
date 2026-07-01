@@ -1,5 +1,8 @@
 import { supabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
+
 // Helper to dispatch cross-posting webhooks
 async function dispatchCrossPosting(post) {
   try {

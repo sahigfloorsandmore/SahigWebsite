@@ -1,5 +1,8 @@
 import { supabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
+
 // Public Fetch Categories
 export async function GET(req) {
   try {
