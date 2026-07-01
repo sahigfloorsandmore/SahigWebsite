@@ -232,10 +232,23 @@ export default function BlogPage() {
               </button>
 
               <div className="blog-modal-scroll">
-                <div className="blog-modal-image-wrapper">
-                  <img src={selectedPost.image} alt={selectedPost.title} />
-                  <div className="blog-modal-img-gradient"></div>
-                </div>
+                {selectedPost.isVideo && selectedPost.sourceUrl ? (
+                  <div className="blog-modal-video-wrapper" style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: "12px 12px 0 0", background: "#000" }}>
+                    <iframe
+                      src={`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(selectedPost.sourceUrl)}&show_text=0&width=560`}
+                      style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                      scrolling="no"
+                      frameBorder="0"
+                      allowFullScreen={true}
+                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                    ></iframe>
+                  </div>
+                ) : (
+                  <div className="blog-modal-image-wrapper">
+                    <img src={selectedPost.image} alt={selectedPost.title} />
+                    <div className="blog-modal-img-gradient"></div>
+                  </div>
+                )}
 
                 <div className="blog-modal-body">
                   <div className="blog-modal-meta">

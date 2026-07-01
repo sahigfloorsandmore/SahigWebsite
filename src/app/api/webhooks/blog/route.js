@@ -80,7 +80,7 @@ export async function POST(req) {
 
     // 2. Parse Payload
     const body = await req.json();
-    const { content, image, imageUrl, sourceUrl, title: passedTitle } = body;
+    const { content, image, imageUrl, sourceUrl, title: passedTitle, isVideo } = body;
 
     if (!content) {
       return Response.json({ message: "Content body is required" }, { status: 400 });
@@ -113,6 +113,7 @@ export async function POST(req) {
     const postImage = imageUrl || image || "/images/services/tile.png";
 
     // 6. Create Blog Entry
+    const isVideoPost = isVideo === true || isVideo === 'true' || isVideo === 'video';
     const newPost = {
       id: Date.now().toString(),
       title: generatedTitle,
@@ -121,7 +122,8 @@ export async function POST(req) {
       image: postImage,
       date: new Date().toISOString(),
       source: "Facebook",
-      source_url: sourceUrl || ""
+      source_url: sourceUrl || "",
+      is_video: isVideoPost
     };
 
     // 7. Save to Database
@@ -135,7 +137,8 @@ export async function POST(req) {
         image: newPost.image,
         date: newPost.date,
         source: newPost.source,
-        source_url: newPost.source_url
+        source_url: newPost.source_url,
+        is_video: newPost.is_video
       });
 
     if (insertError) throw insertError;

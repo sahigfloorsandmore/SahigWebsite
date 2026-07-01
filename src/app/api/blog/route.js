@@ -57,7 +57,8 @@ export async function GET(req) {
       image: p.image,
       date: p.date,
       source: p.source,
-      sourceUrl: p.source_url
+      sourceUrl: p.source_url,
+      isVideo: p.is_video
     }));
 
     return Response.json(mappedPosts);
@@ -91,7 +92,8 @@ export async function POST(req) {
       content,
       image: image || "/images/services/tile.png",
       date: new Date().toISOString(),
-      source: "Manual"
+      source: "Manual",
+      is_video: false
     };
 
     const { error } = await supabase
@@ -103,7 +105,8 @@ export async function POST(req) {
         content: newPost.content,
         image: newPost.image,
         date: newPost.date,
-        source: newPost.source
+        source: newPost.source,
+        is_video: newPost.is_video
       });
 
     if (error) throw error;
@@ -111,7 +114,7 @@ export async function POST(req) {
     // Asynchronously trigger cross-posting social integrations
     dispatchCrossPosting(newPost);
 
-    return Response.json({ success: true, post: newPost });
+    return Response.json({ success: true, post: { ...newPost, isVideo: newPost.is_video } });
   } catch (error) {
     console.error("Blog POST Error:", error);
     return Response.json({ message: "Failed to save blog post" }, { status: 500 });
@@ -159,7 +162,8 @@ export async function PUT(req) {
       image: updatedPost.image,
       date: updatedPost.date,
       source: updatedPost.source,
-      sourceUrl: updatedPost.source_url
+      sourceUrl: updatedPost.source_url,
+      isVideo: updatedPost.is_video
     };
 
     return Response.json({ success: true, post: mappedPost });
