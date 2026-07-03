@@ -127,4 +127,8 @@
   .footer-content {
     grid-template-columns: 1fr;
   }
+  .footer-brand h2 {
+    white-space: normal;
+    font-size: 1.4rem;
+  }
 }

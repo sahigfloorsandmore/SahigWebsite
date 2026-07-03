@@ -121,6 +121,15 @@
   }
   .logo h1 {
     font-size: 1.15rem;
+    white-space: normal;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+  .logo span {
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+    font-weight: 400;
   }
   .logo-img {
     height: 36px;
