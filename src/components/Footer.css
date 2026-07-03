@@ -124,11 +124,18 @@
 }
 
 @media (max-width: 768px) {
+  .footer {
+    overflow-x: hidden;
+  }
   .footer-content {
     grid-template-columns: 1fr;
   }
   .footer-brand h2 {
     white-space: normal;
     font-size: 1.4rem;
+  }
+  .footer-nav-links {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 }
